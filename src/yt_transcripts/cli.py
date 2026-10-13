@@ -7,7 +7,12 @@ import sys
 from typing import Any
 
 
+_RC = [0]
+
+
 def _print(obj: Any) -> None:
+    if isinstance(obj, dict) and (obj.get("error") or str(obj.get("live_test", "")).startswith("FAILED")):
+        _RC[0] = 2  # non-zero exit so scripts / CI / scheduled tasks can detect failure
     if isinstance(obj, dict) and set(obj) >= {"text"} and len(obj.get("text", "")) > 0 and not obj.get("error"):
         meta = {k: v for k, v in obj.items() if k != "text"}
         print(json.dumps(meta, ensure_ascii=False))
@@ -143,7 +148,7 @@ def main(argv: list[str] | None = None) -> int:
     elif args.cmd == "throttle-reset":
         svc.throttle.reset()
         _print(svc.throttle.status())
-    return 0
+    return _RC[0]
 
 
 if __name__ == "__main__":

@@ -92,3 +92,12 @@ def test_search_and_outline():
     assert len(o) == 2 and o[0]["start"] == "0:00" and o[0]["chars"] > 0
     t.chapters = [{"start": 0, "end": 100, "title": "Intro"}, {"start": 100, "end": 600, "title": "Body"}]
     assert [s["title"] for s in F.outline(t)] == ["Intro", "Body"]
+
+
+def test_cli_exit_codes(tmp_path, monkeypatch):
+    from yt_transcripts import cli
+    monkeypatch.setenv("YTT_HOME", str(tmp_path))
+    cli._RC[0] = 0
+    assert cli.main(["get", "not-a-video"]) == 2
+    cli._RC[0] = 0
+    assert cli.main(["config"]) == 0
