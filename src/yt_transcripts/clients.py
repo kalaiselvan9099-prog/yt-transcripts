@@ -110,3 +110,45 @@ def install(targets: list[str], python: str | None = None) -> list[str]:
         out.append(f"run this once in a terminal: {cmd}")
     out.append("restart each app so it loads the server")
     return out
+
+
+def build_mcpb(out_dir: str | os.PathLike, python: str | None = None) -> str:
+    """Build a Claude Desktop Extension (.mcpb) that runs THIS install's Python.
+
+    Why: the Microsoft Store build of Claude keeps claude_desktop_config.json in a virtualised folder, so
+    writing the config file directly may not be seen. Opening a .mcpb installs the server through the app
+    itself, wherever its settings live.
+    """
+    import zipfile
+
+    from . import __version__
+    python = python or sys.executable
+    manifest = {
+        "manifest_version": "0.3",
+        "name": "yt-transcripts",
+        "display_name": "YouTube Transcripts (local)",
+        "version": __version__,
+        "description": "Resumable, rate-limited YouTube transcripts with outline/search/paging, cached locally.",
+        "author": {"name": "Kalaiselvan M"},
+        "server": {
+            "type": "python",
+            "entry_point": "server/main.py",
+            "mcp_config": {"command": python, "args": ARGS, "env": {}},
+        },
+        "tools": [{"name": n, "description": d} for n, d in [
+            ("yt_transcript", "Transcript of one video (ranges, search, paging)"),
+            ("yt_outline", "Chapters/sections with sizes"),
+            ("yt_start_job", "Background, resumable playlist/channel download"),
+            ("yt_job", "Job status/pause/resume/cancel/export"),
+            ("yt_notes", "Note-taking resume point"),
+            ("yt_import", "Import captions captured elsewhere"),
+            ("yt_maintenance", "doctor/update/config/throttle_reset"),
+        ]],
+        "compatibility": {"platforms": ["win32", "darwin", "linux"]},
+    }
+    out = Path(out_dir) / "yt-transcripts.mcpb"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as z:
+        z.writestr("manifest.json", json.dumps(manifest, indent=2))
+        z.writestr("server/main.py", "import runpy\nrunpy.run_module('yt_transcripts', run_name='__main__')\n")
+    return str(out)

@@ -62,6 +62,11 @@ if ($userPath -notlike "*$scripts*") {
 Step "Registering MCP server in: $Clients"
 & $Py -m yt_transcripts install-clients @($Clients.Split(",") | ForEach-Object { $_.Trim() })
 
+# 6a. Claude Desktop Extension (works for the Microsoft Store build of Claude, whose config folder is virtualised)
+Step "Building Claude Desktop Extension"
+$ext = & $Py -m yt_transcripts build-extension
+Write-Host "  Open this file once to install the tool in Claude:  $ext" -ForegroundColor Yellow
+
 # 6b. Agent Skills (note-making + YouTube-notes workflow) for Claude Code, Codex, Cursor, Copilot
 Step "Installing Agent Skills"
 & (Join-Path $Repo "skills\install.ps1")

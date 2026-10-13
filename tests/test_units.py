@@ -118,3 +118,16 @@ def test_agent_skills_are_spec_valid():
         assert fm["name"] == p.parent.name
         assert re.fullmatch(r"[a-z0-9]+(-[a-z0-9]+)*", fm["name"]) and len(fm["name"]) <= 64
         assert 0 < len(fm["description"]) <= 1024
+
+
+def test_build_mcpb(tmp_path):
+    import json
+    import zipfile
+
+    from yt_transcripts.clients import build_mcpb
+    out = build_mcpb(tmp_path, python="C:\\py\\python.exe")
+    with zipfile.ZipFile(out) as z:
+        m = json.loads(z.read("manifest.json"))
+        assert "server/main.py" in z.namelist()
+    assert m["server"]["mcp_config"]["command"] == "C:\\py\\python.exe"
+    assert m["server"]["mcp_config"]["args"] == ["-m", "yt_transcripts", "serve"]

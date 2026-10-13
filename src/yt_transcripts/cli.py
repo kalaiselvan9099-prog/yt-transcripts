@@ -70,6 +70,8 @@ def build_parser() -> argparse.ArgumentParser:
     sub.add_parser("update", help="update the YouTube layer (yt-dlp, PO-token plugin, fallback lib)")
     sub.add_parser("config", help="show effective settings")
     sub.add_parser("throttle-reset", help="clear backoff state (use only if you know the block is over)")
+    be = sub.add_parser("build-extension", help="build yt-transcripts.mcpb (Claude Desktop Extension) for this install")
+    be.add_argument("--out", default="", help="output folder (default: <YTT_HOME>)")
     ic = sub.add_parser("install-clients", help="register the MCP server in AI apps (backs up configs)")
     ic.add_argument("targets", nargs="*", default=["claude", "cursor", "codex", "vscode", "claude-code"],
                     help="any of: claude cursor codex vscode claude-code (default: all)")
@@ -89,6 +91,11 @@ def main(argv: list[str] | None = None) -> int:
     if args.cmd == "serve":
         from .server import run
         run(http_port=args.http)
+        return 0
+    if args.cmd == "build-extension":
+        from .clients import build_mcpb
+        from .config import load_settings
+        print(build_mcpb(args.out or load_settings().home))
         return 0
     if args.cmd == "install-clients":
         from .clients import install
