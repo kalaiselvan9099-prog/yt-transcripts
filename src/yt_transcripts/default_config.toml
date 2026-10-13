@@ -1,0 +1,49 @@
+# yt-transcripts default configuration.
+# Copy any key into <YTT_HOME>/config.toml to override it. Env vars YTT_<KEY_UPPER> override both
+# (e.g. YTT_RESPONSE_MAX_CHARS=200000).
+
+# ---------- Captions ----------
+languages = ["en"]            # preference order; regional variants (en-US, en-GB) match "en"
+prefer_manual = true          # human-made captions beat auto-generated when both exist
+allow_translated = false      # never accept YouTube machine *translations* as the transcript
+
+# ---------- Backends (order = fallback chain) ----------
+# ytdlp           : yt-dlp + optional bgutil PO-token plugin (most robust, updates fastest)
+# transcript_api  : youtube-transcript-api (lightweight fallback)
+backends = ["ytdlp", "transcript_api"]
+# Any extra yt-dlp command-line flags (future-proof escape hatch when YouTube changes), e.g.
+#   ["--extractor-args", "youtube:player_client=default,-web"]
+#   ["--js-runtimes", "node"]
+#   ["--extractor-args", "youtubepot-bgutilhttp:base_url=http://127.0.0.1:4416"]
+ytdlp_args = []
+cookies_from_browser = ""     # e.g. "firefox". OFF by default: using an account risks a ban.
+proxy = ""                    # e.g. "http://user:pass@host:port"
+fetch_timeout_seconds = 180   # hard timeout for one video fetch (isolated subprocess)
+
+# ---------- Anti-block pacing (shared across every app/process on this PC) ----------
+min_delay_seconds = 8.0       # random pause between YouTube requests is uniform(min, max)
+max_delay_seconds = 15.0
+hourly_cap = 120              # max YouTube requests per rolling hour (guest limit is ~300 videos/h)
+batch_size = 25               # after this many requests ...
+batch_pause_seconds = [60, 180]  # ... take a longer random break
+backoff_schedule_seconds = [600, 1800, 7200]  # waits after 1st/2nd/3rd consecutive block signal
+max_consecutive_blocks = 3    # after this many, the job pauses with a resume time instead of retrying
+
+# ---------- Jobs ----------
+max_attempts_per_video = 3
+broken_streak_to_pause = 3    # consecutive "YouTube changed something" failures before pausing the job
+auto_resume_on_start = true   # MCP server / CLI restarts interrupted jobs automatically
+worker_max_wait_seconds = 14400  # worker sleeps through pauses up to this long; longer -> exits, resumes later
+heartbeat_seconds = 20
+export_markdown = true        # write <job>/NN - title.md files + index.md when a job finishes
+
+# ---------- Output to AI apps ----------
+# Response cap per tool call. ~40k chars ≈ 10k tokens: under Claude Code's 10k-token warning
+# and far under its 25k default max. Raise it if your apps raise their limits.
+response_max_chars = 40000
+timestamp_every_seconds = 30
+remove_fillers = true         # drop "um", "uh", "you know" etc. (~10-15% smaller)
+
+# ---------- Self-maintenance ----------
+auto_update = "warn"          # "off" | "warn" | "auto"  (auto = run `ytt update` when breakage is detected)
+update_check_days = 7         # warn when the YouTube layer hasn't been updated for this long

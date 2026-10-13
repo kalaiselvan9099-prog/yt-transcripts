@@ -1,0 +1,86 @@
+# Error-message patterns used to classify failures (case-insensitive regular expressions).
+# YouTube changes its wording over time: add patterns to <YTT_HOME>/patterns.toml to extend these
+# WITHOUT touching code. User patterns are appended to these defaults.
+
+# YouTube is throttling us -> back off (never retry immediately)
+rate_limited = [
+  "HTTP Error 429",
+  "Too Many Requests",
+  "\\b429\\b",
+  "IpBlocked",
+  "RequestBlocked",
+  "rate.?limit",
+  "This content isn.t available",       # yt-dlp wiki: shown when the session rate limit is hit
+]
+
+# Bot challenge -> treated like a rate limit, but with the longest backoff
+bot_check = [
+  "Sign in to confirm you.re not a bot",
+  "confirm you.re not a bot",
+  "unusual traffic",
+  "captcha",
+]
+
+# Permanent per-video conditions -> skip the video, don't retry
+unavailable = [
+  "Video unavailable",
+  "This video is private",
+  "Private video",
+  "This video has been removed",
+  "members-only",
+  "Join this channel to get access",
+  "age.restricted",
+  "Sign in to confirm your age",
+  "VideoUnavailable",
+  "VideoUnplayable",
+  "is not available in your country",
+  "Premieres in",
+  "This live event will begin",
+]
+
+no_captions = [
+  "TranscriptsDisabled",
+  "NoTranscriptFound",
+  "no subtitles",
+  "There are no subtitles",
+  "Subtitles are disabled",
+]
+
+# Our own connectivity problems (Wi-Fi drop, proxy/VPN, DNS) -> wait and retry; NOT a YouTube change
+network = [
+  "Unable to connect",
+  "Tunnel connection failed",
+  "ProxyError",
+  "timed out",
+  "getaddrinfo failed",
+  "Name or service not known",
+  "Temporary failure in name resolution",
+  "Network is unreachable",
+  "No route to host",
+  "Connection reset",
+  "Connection refused",
+  "Connection aborted",
+  "Remote end closed connection",
+  "RemoteDisconnected",
+  "SSLError",
+  "CERTIFICATE_VERIFY_FAILED",
+]
+
+# Signals that YouTube changed something and the YouTube layer needs `ytt update`
+needs_update = [
+  "PoTokenRequired",
+  "PO Token",
+  "nsig extraction failed",
+  "Signature extraction failed",
+  "Unable to extract",
+  "Failed to extract any player response",
+  "challenge solv",
+  "n challenge",
+  "JS challenge",
+  "Requested format is not available",
+  "please report this issue",
+  "Confirm you are on the latest version",
+  "JavaScript runtime",
+  "EJS",
+  "empty caption",
+]
