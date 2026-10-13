@@ -51,9 +51,16 @@ jobs:
       - name: Doctor with live fetch
         shell: bash
         run: |
-          set -o pipefail
-          python -m yt_transcripts doctor --live CXGGF4ls1JU | tee doctor.json
+          python -m yt_transcripts doctor --live CXGGF4ls1JU > doctor.json; rc=$?
+          cat doctor.json
+          if grep -Eq '"live_test": "FAILED (bot_check|rate_limited)' doctor.json; then
+            echo "::notice::Inconclusive: YouTube bot-checks cloud runner IPs. Run 'ytt doctor --live' on a home PC."
+            echo "SKIP_RANGE=1" >> "$GITHUB_ENV"
+            exit 0
+          fi
+          exit $rc
       - name: Range read (cached, no second YouTube hit)
+        if: env.SKIP_RANGE != '1'
         shell: bash
         run: python -m yt_transcripts get CXGGF4ls1JU --start 39:30 --end 41:00 | head -c 1500
       - name: Report
