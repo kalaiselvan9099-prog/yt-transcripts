@@ -213,10 +213,9 @@ def test_real_detached_worker_and_cli(tmp_path):
                              capture_output=True, text=True, env=env, timeout=60).stdout
         assert '"status": "starting"' in out
         job = svc.store.jobs()[0]["job_id"]
-        for _ in range(100):
-            if svc.store.job(job)["status"] == "done":
-                break
-            time.sleep(0.1)
+        deadline = time.time() + 90  # Windows runners can take many seconds to start a detached Python
+        while time.time() < deadline and svc.store.job(job)["status"] != "done":
+            time.sleep(0.25)
         assert svc.job_status(job)["done"] == 2
         assert (svc.s.exports_dir / job / "index.md").exists()
     finally:
