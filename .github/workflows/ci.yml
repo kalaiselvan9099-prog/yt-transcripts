@@ -51,7 +51,7 @@ jobs:
       - name: Doctor with live fetch
         shell: bash
         run: |
-          python -m yt_transcripts doctor --live CXGGF4ls1JU > doctor.json; rc=$?
+          rc=0; python -m yt_transcripts doctor --live CXGGF4ls1JU > doctor.json || rc=$?
           cat doctor.json
           python -c "import json;d=json.load(open('doctor.json',encoding='utf-8',errors='replace'));print('::notice title=live_test::'+str(d.get('live_test'))[:900].replace(chr(10),' '));print('::notice title=warnings::'+json.dumps(d.get('warnings')))" || echo "::warning title=doctor::doctor output not JSON (rc=$rc)"
           if grep -Eq '"live_test": "FAILED (bot_check|rate_limited)' doctor.json; then
