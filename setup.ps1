@@ -62,6 +62,10 @@ if ($userPath -notlike "*$scripts*") {
 Step "Registering MCP server in: $Clients"
 & $Py -m yt_transcripts install-clients @($Clients.Split(",") | ForEach-Object { $_.Trim() })
 
+# 6b. Agent Skills (note-making + YouTube-notes workflow) for Claude Code, Codex, Cursor, Copilot
+Step "Installing Agent Skills"
+& (Join-Path $Repo "skills\install.ps1")
+
 # 7. Scheduled tasks: resume interrupted jobs + keep up with YouTube changes --------
 if (-not $NoTasks) {
   Step "Creating scheduled tasks"

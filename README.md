@@ -71,4 +71,10 @@ Copy keys from `src/yt_transcripts/default_config.toml` into `%LOCALAPPDATA%\ytt
 
 Using cookies (`cookies_from_browser`) raises limits but **risks your Google account**; keep it off unless needed.
 
+## Agent Skills (for any AI agent)
+
+`skills/` holds portable skills: `structured-note-making` (general notes) and `youtube-transcript-notes`
+(this tool's playlist-to-notes workflow). `setup.ps1` installs them for Claude Code, Codex, Cursor and Copilot;
+see `skills/README.md`.
+
 See `docs/MAINTENANCE.md` (what to do when YouTube changes) and `docs/ARCHITECTURE.md`.

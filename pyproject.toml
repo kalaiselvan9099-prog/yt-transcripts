@@ -19,7 +19,7 @@ dependencies = [
 
 [project.optional-dependencies]
 pot = ["bgutil-ytdlp-pot-provider>=1.0"]
-dev = ["pytest>=8"]
+dev = ["pytest>=8", "pyyaml>=6"]
 
 [project.scripts]
 ytt = "yt_transcripts.cli:main"

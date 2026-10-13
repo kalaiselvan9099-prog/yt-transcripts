@@ -17,8 +17,8 @@ jobs:
         os: [windows-latest, ubuntu-latest]
         python: ["3.11", "3.13"]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python }}
       - run: python -m pip install -e ".[dev]"
@@ -35,11 +35,11 @@ jobs:
       YTT_MIN_DELAY_SECONDS: "8"
       YTT_MAX_DELAY_SECONDS: "12"
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.13"
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: "22"
       - uses: denoland/setup-deno@v2
@@ -49,6 +49,28 @@ jobs:
       - name: Update YouTube layer + build PO-token provider
         run: python -m yt_transcripts update
       - name: Doctor with live fetch
-        run: python -m yt_transcripts doctor --live CXGGF4ls1JU
+        shell: bash
+        run: |
+          set -o pipefail
+          python -m yt_transcripts doctor --live CXGGF4ls1JU | tee doctor.json
       - name: Range read (cached, no second YouTube hit)
-        run: python -m yt_transcripts get CXGGF4ls1JU --start 39:30 --end 41:00
+        shell: bash
+        run: python -m yt_transcripts get CXGGF4ls1JU --start 39:30 --end 41:00 | head -c 1500
+      - name: Report
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "## Live YouTube canary"
+            echo '```json'
+            cat doctor.json 2>/dev/null | head -c 6000 || echo "no doctor output"
+            echo '```'
+            echo "### Recent events"
+            echo '```'
+            python - <<'PY'
+          from yt_transcripts.service import Service
+          for e in Service().store.recent_events(15):
+              print(e["time"], e["level"], e["video_id"], e["message"][:300])
+          PY
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

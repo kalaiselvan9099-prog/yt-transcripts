@@ -101,3 +101,20 @@ def test_cli_exit_codes(tmp_path, monkeypatch):
     assert cli.main(["get", "not-a-video"]) == 2
     cli._RC[0] = 0
     assert cli.main(["config"]) == 0
+
+
+def test_agent_skills_are_spec_valid():
+    import pathlib
+    import re
+
+    import yaml
+    root = pathlib.Path(__file__).resolve().parents[1] / "skills"
+    skills = [p for p in root.glob("*/SKILL.md")]
+    assert len(skills) >= 2
+    for p in skills:
+        text = p.read_text("utf-8")
+        assert text.startswith("---\n")
+        fm = yaml.safe_load(text.split("---")[1])
+        assert fm["name"] == p.parent.name
+        assert re.fullmatch(r"[a-z0-9]+(-[a-z0-9]+)*", fm["name"]) and len(fm["name"]) <= 64
+        assert 0 < len(fm["description"]) <= 1024
